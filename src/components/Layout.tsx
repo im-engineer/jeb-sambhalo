@@ -61,10 +61,10 @@ export const Layout: React.FC<LayoutProps> = ({ currentTab, setCurrentTab, child
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 flex transition-colors duration-300">
+    <div className="h-screen w-screen overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 flex transition-colors duration-300">
       
       {/* Sidebar for Desktop */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white/40 dark:bg-slate-900/40 border-r border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl p-6 sticky top-0 h-screen z-10">
+      <aside className="hidden lg:flex flex-col w-64 bg-white/40 dark:bg-slate-900/40 border-r border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl p-6 h-full z-10">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
             <Sparkles size={20} />
@@ -124,7 +124,7 @@ export const Layout: React.FC<LayoutProps> = ({ currentTab, setCurrentTab, child
       </aside>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         
         {/* Top Navbar */}
         <header className="sticky top-0 bg-slate-50/70 dark:bg-slate-950/70 border-b border-slate-200/60 dark:border-slate-800/60 backdrop-blur-md px-6 py-4 flex items-center justify-between z-20">
@@ -299,7 +299,7 @@ export const Layout: React.FC<LayoutProps> = ({ currentTab, setCurrentTab, child
         )}
 
         {/* Content Area */}
-        <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto overflow-y-auto">
+        <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto overflow-y-auto pb-24">
           {children}
         </main>
       </div>
