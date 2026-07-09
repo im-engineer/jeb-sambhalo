@@ -280,7 +280,12 @@ export const Reports: React.FC = () => {
                 <div key={m} className="flex justify-between items-center text-xs">
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white">{m}</h4>
-                    <span className="text-[10px] text-slate-450 block mt-0.5">Funded: {formatCurrency(stats.contributed)}</span>
+                    <div className="flex flex-wrap gap-x-2 items-center mt-0.5">
+                      <span className="text-[10px] text-slate-450">Funded: {formatCurrency(stats.contributed)}</span>
+                      {!stats.isContributionFullyPaid && (
+                        <span className="text-[9px] text-amber-500 font-semibold">(₹{stats.pendingContribution} pending)</span>
+                      )}
+                    </div>
                   </div>
                   <div className="text-right">
                     <span className="font-extrabold text-slate-850 dark:text-slate-200 block">{pct.toFixed(0)}%</span>

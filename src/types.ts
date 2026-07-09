@@ -203,4 +203,7 @@ export interface AppSettings {
   pinnedCategories: ExpenseCategory[];
   monthlyNotes: Record<string, string>; // Month string -> note text
   carryOverBalances: Record<string, number>; // Month string -> carryover amount
+  syncId?: string;
+  isSyncEnabled?: boolean;
+  autoSync?: boolean;
 }

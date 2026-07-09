@@ -206,7 +206,9 @@ export const Dashboard: React.FC = () => {
           <span className={`text-3xl font-extrabold tracking-tight ${remainingSharePerPerson < 0 ? 'text-rose-500' : 'text-indigo-500'}`}>
             {formatCurrency(remainingSharePerPerson)}
           </span>
-          <p className="text-[10px] text-slate-400 mt-4 font-medium">To be received equally by 4 flatmates</p>
+          <p className="text-[10px] text-slate-400 mt-4 font-medium">
+            To be received equally by {Object.values(useApp().memberStats).filter(s => s.contributed > 0).length || 4} paid flatmate(s)
+          </p>
         </div>
 
       </div>
@@ -400,8 +402,11 @@ export const Dashboard: React.FC = () => {
                   <div key={name} className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 last:border-0 last:pb-0">
                     <div>
                       <h4 className="font-semibold text-sm">{name}</h4>
-                      <div className="flex gap-2 text-[10px] text-slate-400 mt-0.5">
+                      <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-slate-400 mt-0.5">
                         <span>Funded: {formatCurrency(stats.contributed)}</span>
+                        {!stats.isContributionFullyPaid && (
+                          <span className="text-amber-500 font-semibold">(₹{stats.pendingContribution} pending)</span>
+                        )}
                         <span>•</span>
                         <span>Paid Direct: {formatCurrency(stats.spent)}</span>
                       </div>

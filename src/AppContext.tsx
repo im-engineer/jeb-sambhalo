@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type {
   Expense,
   Contribution,
@@ -94,6 +94,16 @@ interface AppContextType {
   addSharedAppliance: (appliance: Omit<SharedAppliance, 'id'>) => void;
   deleteSharedAppliance: (id: string) => void;
 
+  // Sync state & actions
+  isSyncing: boolean;
+  syncError: string | null;
+  lastSyncedTime: string | null;
+  enableSync: (id: string) => Promise<boolean>;
+  disableSync: () => void;
+  createSyncGroup: () => Promise<string>;
+  pushToCloud: () => Promise<void>;
+  pullFromCloud: () => Promise<void>;
+
   // Computations for active month
   activeExpenses: Expense[];
   activeContributions: Contribution[];
@@ -103,7 +113,7 @@ interface AppContextType {
   remainingSharePerPerson: number;
   settlements: Settlement[];
   budgetUsage: Record<ExpenseCategory, { limit: number; spent: number; pct: number }>;
-  memberStats: Record<MemberName, { contributed: number; spent: number; balance: number }>;
+  memberStats: Record<MemberName, { contributed: number; spent: number; balance: number; pendingContribution: number; isContributionFullyPaid: boolean }>;
   notifications: { id: string; type: 'warning' | 'info' | 'danger' | 'success'; message: string; date: string }[];
 }
 
@@ -135,6 +145,9 @@ const DEFAULT_SETTINGS: AppSettings = {
   pinnedCategories: ['Groceries', 'Rent', 'Electricity', 'Internet'],
   monthlyNotes: { '2026-07': 'Welcome to the new flat! Please remember to upload bills.' },
   carryOverBalances: {},
+  syncId: '',
+  isSyncEnabled: false,
+  autoSync: true
 };
 
 const DEFAULT_CONTRIBUTIONS = (month: string): Contribution[] => [
@@ -271,6 +284,231 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => { localStorage.setItem(KEYS.MAINTENANCE, JSON.stringify(maintenanceLogs)); }, [maintenanceLogs]);
   useEffect(() => { localStorage.setItem(KEYS.APPLIANCES, JSON.stringify(sharedAppliances)); }, [sharedAppliances]);
 
+  // Cloud Sync States
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [lastSyncedTime, setLastSyncedTime] = useState<string | null>(null);
+  const [localLastUpdated, setLocalLastUpdated] = useState<string>(() => new Date().toISOString());
+
+  const isSyncingFromCloudRef = useRef(false);
+
+  // Helper to compile current state to payload
+  const getPayload = () => ({
+    expenses,
+    contributions,
+    inventory,
+    budgets,
+    history,
+    shoppingList,
+    wishlist,
+    utilityReminders,
+    gasLogs,
+    waterLogs,
+    deposits,
+    maintenanceLogs,
+    sharedAppliances,
+    currency: settings.currency,
+    pinnedCategories: settings.pinnedCategories,
+    monthlyNotes: settings.monthlyNotes,
+    carryOverBalances: settings.carryOverBalances || {}
+  });
+
+  // Helper to apply payload to state
+  const applyPayload = (payload: any) => {
+    isSyncingFromCloudRef.current = true;
+    if (payload.expenses) setExpenses(payload.expenses);
+    if (payload.contributions) setContributions(payload.contributions);
+    if (payload.inventory) setInventory(payload.inventory);
+    if (payload.budgets) setBudgets(payload.budgets);
+    if (payload.history) setHistory(payload.history);
+    if (payload.shoppingList) setShoppingList(payload.shoppingList);
+    if (payload.wishlist) setWishlist(payload.wishlist);
+    if (payload.utilityReminders) setUtilityReminders(payload.utilityReminders);
+    if (payload.gasLogs) setGasLogs(payload.gasLogs);
+    if (payload.waterLogs) setWaterLogs(payload.waterLogs);
+    if (payload.deposits) setDeposits(payload.deposits);
+    if (payload.maintenanceLogs) setMaintenanceLogs(payload.maintenanceLogs);
+    if (payload.sharedAppliances) setSharedAppliances(payload.sharedAppliances);
+    
+    setSettings(prev => ({
+      ...prev,
+      currency: payload.currency || prev.currency,
+      pinnedCategories: payload.pinnedCategories || prev.pinnedCategories,
+      monthlyNotes: payload.monthlyNotes || prev.monthlyNotes,
+      carryOverBalances: payload.carryOverBalances || prev.carryOverBalances
+    }));
+
+    if (payload.lastUpdated) {
+      setLocalLastUpdated(payload.lastUpdated);
+    }
+    setLastSyncedTime(new Date().toLocaleTimeString());
+
+    setTimeout(() => {
+      isSyncingFromCloudRef.current = false;
+    }, 1000);
+  };
+
+  // Actions
+  const createSyncGroup = async (): Promise<string> => {
+    setIsSyncing(true);
+    setSyncError(null);
+    try {
+      const initialPayload = {
+        ...getPayload(),
+        lastUpdated: new Date().toISOString()
+      };
+      
+      const res = await fetch('https://jsonblob.com/api/jsonBlob', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(initialPayload)
+      });
+      
+      if (!res.ok) throw new Error('Failed to create cloud sync group.');
+      
+      const location = res.headers.get('Location');
+      if (!location) throw new Error('No sync location returned.');
+      
+      const id = location.split('/').pop() || '';
+      if (!id) throw new Error('Invalid sync location URL.');
+      
+      setSettings(prev => ({
+        ...prev,
+        syncId: id,
+        isSyncEnabled: true,
+        autoSync: true
+      }));
+      setLastSyncedTime(new Date().toLocaleTimeString());
+      setLocalLastUpdated(initialPayload.lastUpdated);
+      setIsSyncing(false);
+      return id;
+    } catch (err: any) {
+      console.error(err);
+      setSyncError(err.message || 'Error creating cloud group.');
+      setIsSyncing(false);
+      throw err;
+    }
+  };
+
+  const enableSync = async (id: string): Promise<boolean> => {
+    setIsSyncing(true);
+    setSyncError(null);
+    try {
+      const res = await fetch(`https://jsonblob.com/api/jsonBlob/${id}`);
+      if (!res.ok) throw new Error('Flat Sync ID not found or expired.');
+      
+      const data = await res.json();
+      applyPayload(data);
+      
+      setSettings(prev => ({
+        ...prev,
+        syncId: id,
+        isSyncEnabled: true,
+        autoSync: true
+      }));
+      
+      setIsSyncing(false);
+      return true;
+    } catch (err: any) {
+      console.error(err);
+      setSyncError(err.message || 'Error connecting to sync group.');
+      setIsSyncing(false);
+      return false;
+    }
+  };
+
+  const disableSync = () => {
+    setSettings(prev => ({
+      ...prev,
+      isSyncEnabled: false,
+      syncId: ''
+    }));
+    setLastSyncedTime(null);
+    setSyncError(null);
+  };
+
+  const pushToCloud = async () => {
+    if (!settings.isSyncEnabled || !settings.syncId) return;
+    setIsSyncing(true);
+    setSyncError(null);
+    try {
+      const updatedTime = new Date().toISOString();
+      const payload = {
+        ...getPayload(),
+        lastUpdated: updatedTime
+      };
+      
+      const res = await fetch(`https://jsonblob.com/api/jsonBlob/${settings.syncId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!res.ok) throw new Error('Cloud sync upload failed.');
+      
+      setLocalLastUpdated(updatedTime);
+      setLastSyncedTime(new Date().toLocaleTimeString());
+    } catch (err: any) {
+      console.error(err);
+      setSyncError('Push error: Check connection.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const pullFromCloud = async () => {
+    if (!settings.isSyncEnabled || !settings.syncId) return;
+    setIsSyncing(true);
+    setSyncError(null);
+    try {
+      const res = await fetch(`https://jsonblob.com/api/jsonBlob/${settings.syncId}`);
+      if (!res.ok) throw new Error('Failed to fetch from cloud.');
+      
+      const data = await res.json();
+      
+      // Only apply if the cloud data is newer than our local data
+      if (data.lastUpdated && data.lastUpdated !== localLastUpdated) {
+        applyPayload(data);
+      } else {
+        setLastSyncedTime(new Date().toLocaleTimeString());
+      }
+    } catch (err: any) {
+      console.error(err);
+      setSyncError('Pull error: Check connection.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Background polling effect
+  useEffect(() => {
+    if (!settings.isSyncEnabled || !settings.syncId || !settings.autoSync) return;
+    
+    // Poll every 12 seconds
+    const interval = setInterval(() => {
+      pullFromCloud();
+    }, 12000);
+    
+    return () => clearInterval(interval);
+  }, [settings.isSyncEnabled, settings.syncId, settings.autoSync, localLastUpdated]);
+
+  // Debounced auto-push on local changes
+  useEffect(() => {
+    if (!settings.isSyncEnabled || !settings.syncId) return;
+    if (isSyncingFromCloudRef.current) return;
+    
+    const timer = setTimeout(() => {
+      pushToCloud();
+    }, 800);
+    
+    return () => clearTimeout(timer);
+  }, [
+    expenses, contributions, inventory, budgets, history,
+    shoppingList, wishlist, utilityReminders, gasLogs,
+    waterLogs, deposits, maintenanceLogs, sharedAppliances,
+    settings.currency, settings.pinnedCategories, settings.monthlyNotes, settings.carryOverBalances
+  ]);
+
   // Handle dark mode side-effect
   useEffect(() => {
     const root = window.document.documentElement;
@@ -299,7 +537,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const totalExpensesAmount = activeExpenses.reduce((sum, e) => sum + e.amount, 0);
   const remainingBalance = totalCollected - expensesFromFund;
-  const remainingSharePerPerson = remainingBalance / 4;
+  // Remaining balance is divided only among those who have contributed
+  const activeContributorsCount = MEMBERS.filter(m => 
+    activeContributions.some(c => c.member === m && c.amount > 0)
+  ).length || 4;
+  const remainingSharePerPerson = remainingBalance / activeContributorsCount;
 
   // Member statistics
   const memberStats = MEMBERS.reduce((acc, member) => {
@@ -310,13 +552,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .filter(e => e.paidBy === member && e.paymentSource === 'Personal')
       .reduce((sum, e) => sum + e.amount, 0);
     
-    // Net balance = (what they contributed + what they paid out of pocket) - (1/4 of total expenses personal + contributions new)
-    const share = (newContributionsSum + expensesPersonal) / 4;
-    const balance = (contributed + spent) - share;
+    // Peer-to-peer balance = what they paid out of pocket - their 1/4 share of total out-of-pocket expenses
+    const personalShare = expensesPersonal / 4;
+    const balance = spent - personalShare;
+    const pendingContribution = Math.max(0, 2000 - contributed);
+    const isContributionFullyPaid = contributed >= 2000;
 
-    acc[member] = { contributed, spent, balance };
+    acc[member] = { contributed, spent, balance, pendingContribution, isContributionFullyPaid };
     return acc;
-  }, {} as Record<MemberName, { contributed: number; spent: number; balance: number }>);
+  }, {} as Record<MemberName, { contributed: number; spent: number; balance: number; pendingContribution: number; isContributionFullyPaid: boolean }>);
 
   // Settlement Matrix Calculation
   const settlements: Settlement[] = [];
@@ -832,6 +1076,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteMaintenanceLog,
         addSharedAppliance,
         deleteSharedAppliance,
+
+        // Sync states & actions
+        isSyncing,
+        syncError,
+        lastSyncedTime,
+        enableSync,
+        disableSync,
+        createSyncGroup,
+        pushToCloud,
+        pullFromCloud,
 
         // Computed
         activeExpenses,

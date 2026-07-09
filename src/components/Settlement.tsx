@@ -39,11 +39,13 @@ export const Settlement: React.FC = () => {
                 <div
                   key={member}
                   className={`p-5 rounded-2xl border transition-all duration-350 flex flex-col justify-between relative overflow-hidden ${
-                    isSettled
-                      ? 'border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/10'
-                      : isOwed
-                      ? 'border-emerald-200 dark:border-emerald-900/30 bg-emerald-50/20 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300'
-                      : 'border-rose-200 dark:border-rose-900/30 bg-rose-50/20 dark:bg-rose-950/20 text-rose-800 dark:text-rose-300'
+                    !stats.isContributionFullyPaid
+                      ? 'border-amber-200 dark:border-amber-900/30 bg-amber-50/5 dark:bg-amber-950/5'
+                      : !isSettled
+                      ? isOwed
+                        ? 'border-emerald-200 dark:border-emerald-900/30 bg-emerald-50/20 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300'
+                        : 'border-rose-200 dark:border-rose-900/30 bg-rose-50/20 dark:bg-rose-950/20 text-rose-800 dark:text-rose-300'
+                      : 'border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/10'
                   }`}
                 >
                   <div className="flex justify-between items-start">
@@ -51,21 +53,35 @@ export const Settlement: React.FC = () => {
                       <h4 className="font-bold text-base text-slate-900 dark:text-white">{member}</h4>
                       <p className="text-xs text-slate-500 mt-1">Flatmate Account</p>
                     </div>
-                    {isSettled ? (
-                      <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-1 rounded-md uppercase">
-                        Fully Settled
-                      </span>
-                    ) : isOwed ? (
-                      <span className="bg-emerald-100/80 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-1 rounded-md uppercase flex items-center gap-1">
-                        <ArrowUpRight size={12} />
-                        To Receive
-                      </span>
-                    ) : (
-                      <span className="bg-rose-100/80 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-[10px] font-bold px-2 py-1 rounded-md uppercase flex items-center gap-1">
-                        <ArrowDownLeft size={12} />
-                        Owes Money
-                      </span>
-                    )}
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      {/* Fund badge */}
+                      {stats.isContributionFullyPaid ? (
+                        <span className="bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold px-2 py-0.5 rounded-md uppercase">
+                          Fund: Paid
+                        </span>
+                      ) : (
+                        <span className="bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 text-[9px] font-bold px-2 py-0.5 rounded-md uppercase">
+                          Fund: ₹{stats.pendingContribution} Pending
+                        </span>
+                      )}
+
+                      {/* P2P badge */}
+                      {isSettled ? (
+                        <span className="bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-400 text-[9px] font-bold px-2 py-0.5 rounded-md uppercase">
+                          P2P: Settled
+                        </span>
+                      ) : isOwed ? (
+                        <span className="bg-emerald-100/80 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold px-2 py-0.5 rounded-md uppercase flex items-center gap-0.5">
+                          <ArrowUpRight size={10} />
+                          Recv ₹{Math.round(stats.balance)}
+                        </span>
+                      ) : (
+                        <span className="bg-rose-100/80 dark:bg-rose-950/40 text-rose-600 dark:text-rose-455 text-[9px] font-bold px-2 py-0.5 rounded-md uppercase flex items-center gap-0.5">
+                          <ArrowDownLeft size={10} />
+                          Owes ₹{Math.round(Math.abs(stats.balance))}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mt-6 border-t border-slate-200/60 dark:border-slate-800/60 pt-4 text-xs text-slate-500 dark:text-slate-400">
@@ -74,13 +90,13 @@ export const Settlement: React.FC = () => {
                       <span className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(stats.contributed)}</span>
                     </div>
                     <div>
-                      <span className="block text-[9px] uppercase tracking-wider text-slate-400">Out-of-pocket Bills</span>
+                      <span className="block text-[9px] uppercase tracking-wider text-slate-400">Out-of-pocket Spend</span>
                       <span className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(stats.spent)}</span>
                     </div>
                   </div>
 
                   <div className="mt-4 pt-3 flex justify-between items-center border-t border-dashed border-slate-200/60 dark:border-slate-800/40">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Net Standing:</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Net Standing (P2P):</span>
                     <span className={`text-base font-extrabold ${isSettled ? 'text-slate-500' : isOwed ? 'text-emerald-500' : 'text-rose-500'}`}>
                       {isSettled ? '₹ 0' : isOwed ? `+ ${formatCurrency(stats.balance)}` : `- ${formatCurrency(Math.abs(stats.balance))}`}
                     </span>
@@ -156,9 +172,9 @@ export const Settlement: React.FC = () => {
         <div>
           <h4 className="font-bold text-sm text-indigo-950 dark:text-indigo-300">How Settlement Works</h4>
           <p className="text-xs text-indigo-700/80 dark:text-indigo-400/80 mt-1 leading-relaxed">
-            The settlement algorithm computes the total net financial input of each member: 
-            <strong> (Contribution + Direct Bill Payments)</strong>. It then compares this against their fair 1/4 share of the combined pool 
-            <strong> (Total Fund + Direct Bill Payments) / 4</strong>. Debtors are automatically matched with creditors to minimize the number of overall bank/UPI transactions required.
+            <strong>Flat Fund:</strong> Every flatmate contributes ₹2,000 to the shared pool. Members who haven't paid yet show a pending contribution to the common fund.
+            <br className="my-1.5" />
+            <strong>Peer-to-Peer Settlements:</strong> For expenses paid out-of-pocket (Personal), the algorithm splits the costs equally (1/4 each) and matches debtors with creditors to minimize bank/UPI transfers.
           </p>
         </div>
       </div>

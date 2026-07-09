@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../AppContext';
-import { Settings as SettingsIcon, Download, Upload, Trash2, CalendarRange, Moon, Sun, Sparkles } from 'lucide-react';
+import { Settings as SettingsIcon, Download, Upload, Trash2, CalendarRange, Moon, Sun, Sparkles, Copy, Check, RefreshCw } from 'lucide-react';
 
 export const Settings: React.FC = () => {
   const {
@@ -10,12 +10,53 @@ export const Settings: React.FC = () => {
     importBackup,
     resetAllData,
     startNewMonth,
-    remainingBalance
+    remainingBalance,
+    // Sync states & actions
+    isSyncing,
+    syncError,
+    lastSyncedTime,
+    enableSync,
+    disableSync,
+    createSyncGroup,
+    pushToCloud,
+    pullFromCloud,
   } = useApp();
 
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [carryBalance, setCarryBalance] = useState(true);
   const [showNewMonthConfirm, setShowNewMonthConfirm] = useState(false);
+  const [syncInputId, setSyncInputId] = useState(settings.syncId || '');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyId = () => {
+    if (!settings.syncId) return;
+    navigator.clipboard.writeText(settings.syncId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCreateSync = async () => {
+    try {
+      const id = await createSyncGroup();
+      setSyncInputId(id);
+    } catch (e) {
+      // Error handled in state
+    }
+  };
+
+  const handleConnectSync = async () => {
+    if (!syncInputId) return;
+    const ok = await enableSync(syncInputId);
+    if (ok) {
+      alert('Connected to Sync group successfully! Loaded latest flat ledger.');
+    }
+  };
+
+  const handleDisconnectSync = () => {
+    if (window.confirm('Disconnect from cloud sync? Your local data will remain, but updates will no longer sync.')) {
+      disableSync();
+    }
+  };
 
   // Backup Export
   const handleExport = () => {
@@ -174,6 +215,145 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
+      </div>
+
+      {/* Cloud Sync Panel */}
+      <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
+          <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+            <RefreshCw size={16} className={`text-indigo-500 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>Flatmates Cloud Sync (Real-time Sharing)</span>
+          </h3>
+          
+          {settings.isSyncEnabled && (
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 font-bold uppercase tracking-wider">
+              Sync Enabled
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-xs text-slate-400 leading-relaxed max-w-2xl">
+            Sync your flat's expenses, grocery inventory, budgets, and bills in real-time across your flatmates' phones and browsers. 
+            One person can **Create** a group, and the rest can **Connect** using the shared Flat Sync ID.
+          </p>
+
+          {syncError && (
+            <p className="text-xs text-rose-500 font-bold bg-rose-500/10 px-3 py-2 rounded-lg">{syncError}</p>
+          )}
+
+          {!settings.isSyncEnabled ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              {/* Option A: Connect */}
+              <div className="space-y-3 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/10">
+                <h4 className="font-bold text-xs">Option A: Connect to Existing Group</h4>
+                <p className="text-[10px] text-slate-400">Paste your flatmate's shared Flat Sync ID to sync their data to this device.</p>
+                <div className="flex gap-2 pt-1">
+                  <input
+                    type="text"
+                    placeholder="Enter Flat Sync ID (e.g. 9924-aefc...)"
+                    value={syncInputId}
+                    onChange={e => setSyncInputId(e.target.value.trim())}
+                    className="flex-1 px-3 py-2 border border-slate-200 dark:border-slate-850 rounded-lg text-xs bg-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleConnectSync}
+                    disabled={isSyncing || !syncInputId}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-755 text-white rounded-lg text-xs font-bold disabled:opacity-50 cursor-pointer"
+                  >
+                    Connect
+                  </button>
+                </div>
+              </div>
+
+              {/* Option B: Create */}
+              <div className="space-y-3 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/10 flex flex-col justify-between">
+                <div>
+                  <h4 className="font-bold text-xs">Option B: Start New Sync Group</h4>
+                  <p className="text-[10px] text-slate-400">Initialize a new cloud database with this device's current data. This generates a unique Flat Sync ID.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCreateSync}
+                  disabled={isSyncing}
+                  className="w-full py-2 border border-slate-205 dark:border-slate-855 hover:bg-slate-55 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-200 rounded-lg text-xs font-bold cursor-pointer bg-white dark:bg-slate-900 shadow-xs"
+                >
+                  Create Sync Group
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 pt-2">
+              <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/5 space-y-3">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-semibold block font-sans">Active Flat Sync ID (Share with Flatmates)</span>
+                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white select-all break-all">{settings.syncId}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyId}
+                    className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-[10px] font-bold hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0 bg-white dark:bg-slate-900 cursor-pointer"
+                  >
+                    {copied ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                    <span>{copied ? 'Copied' : 'Copy ID'}</span>
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 border-t border-slate-200/50 dark:border-slate-800/40 pt-3 text-[10px] text-slate-450">
+                  <span>Last Sync Status: {lastSyncedTime ? `Synced at ${lastSyncedTime}` : 'Pending sync...'}</span>
+                  {settings.autoSync && (
+                    <span className="flex items-center gap-1 text-emerald-500 font-semibold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Auto-sync polling active (12s)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={pullFromCloud}
+                  disabled={isSyncing}
+                  className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 dark:border-slate-855 rounded-xl text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer bg-white dark:bg-slate-900 shadow-xs"
+                >
+                  <RefreshCw size={13} className={isSyncing ? 'animate-spin' : ''} />
+                  <span>Sync Pull (Download)</span>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={pushToCloud}
+                  disabled={isSyncing}
+                  className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 dark:border-slate-855 rounded-xl text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer bg-white dark:bg-slate-900 shadow-xs"
+                >
+                  <Upload size={13} />
+                  <span>Sync Push (Upload)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDisconnectSync}
+                  className="px-4 py-2 border border-rose-200 dark:border-rose-900/30 text-rose-600 dark:text-rose-455 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 rounded-xl text-xs font-semibold ml-auto cursor-pointer"
+                >
+                  Disconnect Sync
+                </button>
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold select-none pt-2">
+                <input
+                  type="checkbox"
+                  checked={settings.autoSync || false}
+                  onChange={e => updateSettings({ autoSync: e.target.checked })}
+                  className="w-4 h-4 rounded text-indigo-650 border-slate-350 focus:ring-indigo-500"
+                />
+                <span>Enable Real-time Auto-Syncing (automatically updates when peers make changes)</span>
+              </label>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Start New Month & Reset Actions */}

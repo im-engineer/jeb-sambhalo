@@ -27,7 +27,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ currentTab, setCurrentTab, children }) => {
-  const { settings, updateSettings, notifications, activeExpenses, totalExpensesAmount, history } = useApp();
+  const { settings, updateSettings, notifications, activeExpenses, totalExpensesAmount, history, isSyncing } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
@@ -228,6 +228,20 @@ export const Layout: React.FC<LayoutProps> = ({ currentTab, setCurrentTab, child
                   <option key={m} value={m}>{m}</option>
                 ))}
               </select>
+            </div>
+
+            {/* Cloud Sync Status Indicator */}
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-100/50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 rounded-xl text-[10px] font-bold">
+              <span className={`w-1.5 h-1.5 rounded-full ${
+                settings.isSyncEnabled 
+                  ? isSyncing ? 'bg-indigo-550 animate-pulse' : 'bg-emerald-500' 
+                  : 'bg-slate-400'
+              }`} />
+              <span className="text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                {settings.isSyncEnabled 
+                  ? isSyncing ? 'Syncing...' : 'Cloud Synced' 
+                  : 'Local Mode'}
+              </span>
             </div>
           </div>
         </header>
