@@ -358,7 +358,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         lastUpdated: new Date().toISOString()
       };
       
-      const res = await fetch('https://jsonblob.com/api/jsonBlob', {
+      const res = await fetch('/api/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(initialPayload)
@@ -394,7 +394,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsSyncing(true);
     setSyncError(null);
     try {
-      const res = await fetch(`https://jsonblob.com/api/jsonBlob/${id}`);
+      const res = await fetch(`/api/sync/${id}`);
       if (!res.ok) throw new Error('Flat Sync ID not found or expired.');
       
       const data = await res.json();
@@ -438,7 +438,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         lastUpdated: updatedTime
       };
       
-      const res = await fetch(`https://jsonblob.com/api/jsonBlob/${settings.syncId}`, {
+      const res = await fetch(`/api/sync/${settings.syncId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -461,7 +461,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsSyncing(true);
     setSyncError(null);
     try {
-      const res = await fetch(`https://jsonblob.com/api/jsonBlob/${settings.syncId}`);
+      const res = await fetch(`/api/sync/${settings.syncId}`);
       if (!res.ok) throw new Error('Failed to fetch from cloud.');
       
       const data = await res.json();
@@ -508,6 +508,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     waterLogs, deposits, maintenanceLogs, sharedAppliances,
     settings.currency, settings.pinnedCategories, settings.monthlyNotes, settings.carryOverBalances
   ]);
+
+  // Auto-connect from URL Sync ID parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlSyncId = params.get('syncId');
+    if (urlSyncId && urlSyncId !== settings.syncId) {
+      console.log('Detected syncId in URL query, auto-connecting...', urlSyncId);
+      enableSync(urlSyncId).then(success => {
+        if (success) {
+          // Remove query parameter from browser address bar
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
+      });
+    }
+  }, [settings.syncId]);
 
   // Handle dark mode side-effect
   useEffect(() => {

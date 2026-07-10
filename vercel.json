@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/sync",
+      "destination": "https://jsonblob.com/api/jsonBlob"
+    },
+    {
+      "source": "/api/sync/:id",
+      "destination": "https://jsonblob.com/api/jsonBlob/:id"
+    }
+  ]
+}

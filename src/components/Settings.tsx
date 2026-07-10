@@ -27,12 +27,21 @@ export const Settings: React.FC = () => {
   const [showNewMonthConfirm, setShowNewMonthConfirm] = useState(false);
   const [syncInputId, setSyncInputId] = useState(settings.syncId || '');
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const handleCopyId = () => {
     if (!settings.syncId) return;
     navigator.clipboard.writeText(settings.syncId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyLink = () => {
+    if (!settings.syncId) return;
+    const inviteUrl = `${window.location.origin}${window.location.pathname}?syncId=${settings.syncId}`;
+    navigator.clipboard.writeText(inviteUrl);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   const handleCreateSync = async () => {
@@ -291,14 +300,24 @@ export const Settings: React.FC = () => {
                     <span className="text-[10px] text-slate-400 font-semibold block font-sans">Active Flat Sync ID (Share with Flatmates)</span>
                     <span className="font-mono text-xs font-bold text-slate-900 dark:text-white select-all break-all">{settings.syncId}</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleCopyId}
-                    className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-[10px] font-bold hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 shrink-0 bg-white dark:bg-slate-900 cursor-pointer"
-                  >
-                    {copied ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
-                    <span>{copied ? 'Copied' : 'Copy ID'}</span>
-                  </button>
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleCopyId}
+                      className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-[10px] font-bold hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5 bg-white dark:bg-slate-900 cursor-pointer"
+                    >
+                      {copied ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                      <span>{copied ? 'Copied' : 'Copy ID'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-705 text-white rounded-lg text-[10px] font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      {linkCopied ? <Check size={11} /> : <Sparkles size={11} />}
+                      <span>{linkCopied ? 'Link Copied!' : 'Copy Invite Link'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 border-t border-slate-200/50 dark:border-slate-800/40 pt-3 text-[10px] text-slate-450">
