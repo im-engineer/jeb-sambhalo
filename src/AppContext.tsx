@@ -407,7 +407,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsSyncing(true);
     setSyncError(null);
     try {
-      const res = await fetch(`/api/sync/${id}`);
+      let targetId = id.trim();
+      
+      // Auto-extract ID if the user pasted a full URL (e.g., Invite Link)
+      if (targetId.includes('?')) {
+        try {
+          const urlParams = new URLSearchParams(targetId.split('?')[1]);
+          const parsedId = urlParams.get('syncId');
+          if (parsedId) {
+            targetId = parsedId.trim();
+          }
+        } catch (e) {
+          // Fallback to path extraction
+        }
+      }
+      
+      // Fallback: extract the last segment of the path if a URL was pasted
+      if (targetId.includes('/')) {
+        targetId = targetId.split('/').pop()?.trim() || targetId;
+      }
+
+      if (!targetId) {
+        throw new Error('Please enter a valid Sync ID.');
+      }
+
+      const res = await fetch(`/api/sync/${targetId}`);
+      if (res.status === 404) {
+        throw new Error('Sync group expired or not found. Please create a new group.');
+      }
       if (!res.ok) throw new Error('Flat Sync ID not found or expired.');
       
       const data = await res.json();
@@ -415,7 +442,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       
       setSettings(prev => ({
         ...prev,
-        syncId: id,
+        syncId: targetId,
         isSyncEnabled: true,
         autoSync: true
       }));
@@ -475,6 +502,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSyncError(null);
     try {
       const res = await fetch(`/api/sync/${settings.syncId}`);
+      if (res.status === 404) {
+        throw new Error('Sync group expired or not found.');
+      }
       if (!res.ok) throw new Error('Failed to fetch from cloud.');
       
       const data = await res.json();
@@ -490,7 +520,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     } catch (err: any) {
       console.error(err);
-      setSyncError('Pull error: Check connection.');
+      setSyncError(err.message || 'Pull error: Check connection.');
     } finally {
       setIsSyncing(false);
     }
