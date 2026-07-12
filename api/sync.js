@@ -13,13 +13,14 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'POST') {
+      const requestBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
       const response = await fetch('https://jsonblob.com/api/jsonBlob', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'User-Agent': userAgent
         },
-        body: JSON.stringify(req.body)
+        body: requestBody
       });
 
       if (!response.ok) {
@@ -61,13 +62,14 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing ID parameter' });
       }
 
+      const requestBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
       const response = await fetch(`https://jsonblob.com/api/jsonBlob/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'User-Agent': userAgent
         },
-        body: JSON.stringify(req.body)
+        body: requestBody
       });
 
       if (!response.ok) {

@@ -1,12 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/sync",
-      "destination": "/api/sync.js"
-    },
-    {
       "source": "/api/sync/:id",
-      "destination": "/api/sync.js?id=:id"
+      "destination": "/api/sync?id=:id"
     }
   ]
 }
