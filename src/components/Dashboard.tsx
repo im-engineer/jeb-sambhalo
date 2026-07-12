@@ -162,13 +162,15 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Grid: 4 Core Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         
         {/* Total Fund */}
-        <div className="bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 hover-card shadow-sm flex flex-col relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-500/10 to-transparent rounded-bl-full pointer-events-none" />
-          <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold tracking-wider uppercase mb-1">Total Fund Collected</span>
-          <span className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{formatCurrency(totalCollected)}</span>
+        <div className="premium-card p-6 flex flex-col justify-between min-h-[140px]">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/10 to-transparent rounded-bl-full pointer-events-none" />
+          <div>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold tracking-wider uppercase mb-1 block">Total Fund Collected</span>
+            <span className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white font-heading">{formatCurrency(totalCollected)}</span>
+          </div>
           <div className="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 font-semibold mt-4">
             <TrendingUp size={14} />
             <span>Preloaded: {formatCurrency(8000)} (editable)</span>
@@ -176,23 +178,27 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Total Expenses */}
-        <div className="bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 hover-card shadow-sm flex flex-col relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-rose-500/10 to-transparent rounded-bl-full pointer-events-none" />
-          <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold tracking-wider uppercase mb-1">Total Expenses</span>
-          <span className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{formatCurrency(totalExpensesAmount)}</span>
+        <div className="premium-card p-6 flex flex-col justify-between min-h-[140px]">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-rose-500/10 to-transparent rounded-bl-full pointer-events-none" />
+          <div>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold tracking-wider uppercase mb-1 block">Total Expenses</span>
+            <span className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white font-heading">{formatCurrency(totalExpensesAmount)}</span>
+          </div>
           <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold mt-4">
             <TrendingDown size={14} />
-            <span>{expenseCount} total transactions logged</span>
+            <span>{expenseCount} transactions logged</span>
           </div>
         </div>
 
         {/* Remaining Balance */}
-        <div className="bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 hover-card shadow-sm flex flex-col relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-emerald-500/10 to-transparent rounded-bl-full pointer-events-none" />
-          <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold tracking-wider uppercase mb-1">Remaining Fund Balance</span>
-          <span className={`text-3xl font-extrabold tracking-tight ${remainingBalance < 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-            {formatCurrency(remainingBalance)}
-          </span>
+        <div className="premium-card p-6 flex flex-col justify-between min-h-[140px]">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-500/10 to-transparent rounded-bl-full pointer-events-none" />
+          <div>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold tracking-wider uppercase mb-1 block">Remaining Fund Balance</span>
+            <span className={`text-3xl font-extrabold tracking-tight font-heading ${remainingBalance < 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+              {formatCurrency(remainingBalance)}
+            </span>
+          </div>
           <div className="flex items-center gap-1.5 text-xs font-semibold mt-4 text-emerald-600 dark:text-emerald-400">
             <Activity size={14} />
             <span>Savings: {formatCurrency(monthlySavings)}</span>
@@ -200,13 +206,15 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Share per Person */}
-        <div className="bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 hover-card shadow-sm flex flex-col relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-violet-500/10 to-transparent rounded-bl-full pointer-events-none" />
-          <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold tracking-wider uppercase mb-1">Remaining Per Person</span>
-          <span className={`text-3xl font-extrabold tracking-tight ${remainingSharePerPerson < 0 ? 'text-rose-500' : 'text-indigo-500'}`}>
-            {formatCurrency(remainingSharePerPerson)}
-          </span>
-          <p className="text-[10px] text-slate-400 mt-4 font-medium">
+        <div className="premium-card p-6 flex flex-col justify-between min-h-[140px]">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-violet-500/10 to-transparent rounded-bl-full pointer-events-none" />
+          <div>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px] font-bold tracking-wider uppercase mb-1 block">Remaining Per Person</span>
+            <span className={`text-3xl font-extrabold tracking-tight font-heading ${remainingSharePerPerson < 0 ? 'text-rose-500' : 'text-indigo-500'}`}>
+              {formatCurrency(remainingSharePerPerson)}
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-450 dark:text-slate-450 mt-4 font-semibold">
             To be received equally by {Object.values(useApp().memberStats).filter(s => s.contributed > 0).length || 4} paid flatmate(s)
           </p>
         </div>
@@ -217,10 +225,10 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         
         {/* Budget Used % */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="premium-card p-4 flex flex-col justify-between">
           <div className="flex justify-between items-start text-slate-400 dark:text-slate-500 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Budget Used</span>
-            <Percent size={14} />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Budget Used</span>
+            <Percent size={13} />
           </div>
           <span className="text-xl font-bold leading-tight">{budgetUsedPct.toFixed(0)}%</span>
           <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
@@ -232,63 +240,63 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Avg Daily Spending */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="premium-card p-4 flex flex-col justify-between">
           <div className="flex justify-between items-start text-slate-400 dark:text-slate-500 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Daily Average</span>
-            <TrendingUp size={14} />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Daily Average</span>
+            <TrendingUp size={13} />
           </div>
           <span className="text-xl font-bold leading-tight">{formatCurrency(avgDailySpending)}</span>
-          <span className="text-[9px] text-slate-400 mt-2 font-medium">Calculated over {daysInMonth} days</span>
+          <span className="text-[9px] text-slate-400 mt-2 font-medium">Over {daysInMonth} days</span>
         </div>
 
         {/* Highest Expense */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="premium-card p-4 flex flex-col justify-between">
           <div className="flex justify-between items-start text-slate-400 dark:text-slate-500 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Highest Cost</span>
-            <Star size={14} className="text-amber-500" />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Highest Cost</span>
+            <Star size={13} className="text-amber-500" />
           </div>
           <span className="text-xl font-bold leading-tight">{formatCurrency(highestExpense)}</span>
-          <span className="text-[9px] text-slate-400 mt-2 font-medium">Single max transaction</span>
+          <span className="text-[9px] text-slate-400 mt-2 font-medium">Single max txn</span>
         </div>
 
         {/* Today's Expense */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="premium-card p-4 flex flex-col justify-between">
           <div className="flex justify-between items-start text-slate-400 dark:text-slate-500 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Today's Spend</span>
-            <Zap size={14} className="text-indigo-500" />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Today's Spend</span>
+            <Zap size={13} className="text-indigo-500" />
           </div>
           <span className="text-xl font-bold leading-tight">{formatCurrency(todaysExpense)}</span>
-          <span className="text-[9px] text-slate-400 mt-2 font-medium">Spent on current date</span>
+          <span className="text-[9px] text-slate-400 mt-2 font-medium">Spent today</span>
         </div>
 
         {/* Total Grocery */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="premium-card p-4 flex flex-col justify-between">
           <div className="flex justify-between items-start text-slate-400 dark:text-slate-500 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Total Groceries</span>
-            <ShoppingCart size={14} className="text-emerald-500" />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Total Groceries</span>
+            <ShoppingCart size={13} className="text-emerald-500" />
           </div>
           <span className="text-xl font-bold leading-tight">{formatCurrency(totalGrocery)}</span>
-          <span className="text-[9px] text-slate-400 mt-2 font-medium">Includes fruits, milk, etc.</span>
+          <span className="text-[9px] text-slate-400 mt-2 font-medium">Fruits, milk, etc.</span>
         </div>
 
         {/* Total Utilities */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="premium-card p-4 flex flex-col justify-between">
           <div className="flex justify-between items-start text-slate-400 dark:text-slate-500 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Total Utilities</span>
-            <Wrench size={14} className="text-blue-500" />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Total Utilities</span>
+            <Wrench size={13} className="text-blue-500" />
           </div>
           <span className="text-xl font-bold leading-tight">{formatCurrency(totalUtilities)}</span>
-          <span className="text-[9px] text-slate-400 mt-2 font-medium">Bills, Rent, Water, Gas</span>
+          <span className="text-[9px] text-slate-400 mt-2 font-medium">Bills, Gas, Water</span>
         </div>
 
         {/* Total Miscellaneous */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="premium-card p-4 flex flex-col justify-between">
           <div className="flex justify-between items-start text-slate-400 dark:text-slate-500 mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Total Misc</span>
-            <HelpCircle size={14} className="text-slate-500" />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Total Misc</span>
+            <HelpCircle size={13} className="text-slate-500" />
           </div>
           <span className="text-xl font-bold leading-tight">{formatCurrency(totalMiscellaneous)}</span>
-          <span className="text-[9px] text-slate-400 mt-2 font-medium">Others, Party, Medicine</span>
+          <span className="text-[9px] text-slate-400 mt-2 font-medium">Other spends</span>
         </div>
 
       </div>
@@ -297,8 +305,8 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Daily Spending & Cumulative trend */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm lg:col-span-2">
-          <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 uppercase tracking-wider">Daily Spending & Monthly Trend</h3>
+        <div className="premium-card p-6 lg:col-span-2">
+          <h3 className="text-xs font-bold text-slate-400 dark:text-slate-550 mb-4 uppercase tracking-wider">Daily Spending & Monthly Trend</h3>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={lineChartData}>
@@ -315,8 +323,8 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Category Breakdown (Pie Chart) */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 uppercase tracking-wider">Category-wise Breakdown</h3>
+        <div className="premium-card p-6">
+          <h3 className="text-xs font-bold text-slate-400 dark:text-slate-550 mb-4 uppercase tracking-wider">Category-wise Breakdown</h3>
           <div className="h-72 w-full flex flex-col justify-between">
             {pieChartData.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-slate-400 text-xs">
@@ -372,8 +380,8 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Weekly Spending Bar Chart */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 uppercase tracking-wider">Weekly Spending</h3>
+        <div className="premium-card p-6">
+          <h3 className="text-xs font-bold text-slate-400 dark:text-slate-550 mb-4 uppercase tracking-wider">Weekly Spending</h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weeklyData}>
@@ -392,9 +400,9 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Member Balances & Spending Summary */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+        <div className="premium-card p-6 flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 uppercase tracking-wider">Flatmate Financial Summary</h3>
+            <h3 className="text-xs font-bold text-slate-400 dark:text-slate-550 mb-4 uppercase tracking-wider">Flatmate Financial Summary</h3>
             <div className="space-y-4">
               {Object.entries(useApp().memberStats).map(([name, stats]) => {
                 const isOwed = stats.balance > 0;

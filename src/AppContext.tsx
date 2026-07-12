@@ -366,11 +366,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       
       if (!res.ok) throw new Error('Failed to create cloud sync group.');
       
-      const location = res.headers.get('Location');
-      if (!location) throw new Error('No sync location returned.');
-      
-      const id = location.split('/').pop() || '';
-      if (!id) throw new Error('Invalid sync location URL.');
+      let id = '';
+      try {
+        const body = await res.json();
+        if (body && body.id) {
+          id = body.id;
+        }
+      } catch (e) {
+        // Body was not JSON
+      }
+
+      if (!id) {
+        const location = res.headers.get('Location') || res.headers.get('location');
+        if (location) {
+          id = location.split('/').pop() || '';
+        }
+      }
+
+      if (!id) throw new Error('No sync ID or location returned.');
       
       setSettings(prev => ({
         ...prev,
@@ -427,12 +440,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSyncError(null);
   };
 
-  const pushToCloud = async () => {
+  const pushToCloud = async (timestamp?: string) => {
     if (!settings.isSyncEnabled || !settings.syncId) return;
     setIsSyncing(true);
     setSyncError(null);
     try {
-      const updatedTime = new Date().toISOString();
+      const updatedTime = timestamp || new Date().toISOString();
       const payload = {
         ...getPayload(),
         lastUpdated: updatedTime
@@ -466,8 +479,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       
       const data = await res.json();
       
-      // Only apply if the cloud data is newer than our local data
-      if (data.lastUpdated && data.lastUpdated !== localLastUpdated) {
+      // Only apply if the cloud data is strictly newer than our local data
+      const cloudTime = data.lastUpdated ? new Date(data.lastUpdated).getTime() : 0;
+      const localTime = localLastUpdated ? new Date(localLastUpdated).getTime() : 0;
+
+      if (data.lastUpdated && cloudTime > localTime) {
         applyPayload(data);
       } else {
         setLastSyncedTime(new Date().toLocaleTimeString());
@@ -497,8 +513,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!settings.isSyncEnabled || !settings.syncId) return;
     if (isSyncingFromCloudRef.current) return;
     
+    const newTimestamp = new Date().toISOString();
+    setLocalLastUpdated(newTimestamp);
+
     const timer = setTimeout(() => {
-      pushToCloud();
+      pushToCloud(newTimestamp);
     }, 800);
     
     return () => clearTimeout(timer);

@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/sync",
-      "destination": "https://jsonblob.com/api/jsonBlob"
+      "destination": "/api/sync.js"
     },
     {
       "source": "/api/sync/:id",
-      "destination": "https://jsonblob.com/api/jsonBlob/:id"
+      "destination": "/api/sync.js?id=:id"
     }
   ]
 }

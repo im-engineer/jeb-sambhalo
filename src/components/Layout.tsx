@@ -66,12 +66,12 @@ export const Layout: React.FC<LayoutProps> = ({ currentTab, setCurrentTab, child
       {/* Sidebar for Desktop */}
       <aside className="hidden lg:flex flex-col w-64 bg-white/40 dark:bg-slate-900/40 border-r border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl p-6 h-full z-10">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-650 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
             <Sparkles size={20} />
           </div>
           <div>
-            <h1 className="font-bold text-lg leading-tight tracking-tight">Jeb Sambhalo</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Dashboard</p>
+            <h1 className="font-bold text-xl leading-none tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">Jeb Sambhalo</h1>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Flat Expense Manager</p>
           </div>
         </div>
 
@@ -136,10 +136,10 @@ export const Layout: React.FC<LayoutProps> = ({ currentTab, setCurrentTab, child
               <Menu size={20} />
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-655 flex items-center justify-center text-white font-bold text-sm">
                 <Sparkles size={14} />
               </div>
-              <span className="font-bold text-sm tracking-tight">Flat Manager</span>
+              <span className="font-bold text-base tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">Jeb Sambhalo</span>
             </div>
           </div>
 
@@ -256,12 +256,12 @@ export const Layout: React.FC<LayoutProps> = ({ currentTab, setCurrentTab, child
             <div className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 z-50 p-6 flex flex-col shadow-2xl animate-fade-in lg:hidden">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-650 flex items-center justify-center text-white shadow-lg">
                     <Sparkles size={18} />
                   </div>
                   <div>
-                    <h1 className="font-bold text-base leading-tight">Flat Manager</h1>
-                    <p className="text-[10px] text-slate-400">4 Flatmates Dashboard</p>
+                    <h1 className="font-bold text-lg leading-none bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">Jeb Sambhalo</h1>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">4 Flatmates Dashboard</p>
                   </div>
                 </div>
                 <button
